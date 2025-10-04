@@ -5,24 +5,18 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::future::pending as future;
 use std::process::Command;
+use url::Url;
 
 fn uri_to_path(uri: &str) -> String {
-    if uri.starts_with("file://") {
-        let path = &uri[7..];
-        if path.starts_with('/') {
-            path.to_string()
-        } else {
-            let first_slash = path.find('/');
-            if let Some(pos) = first_slash {
-                format!("/{}", &path[pos + 1..])
-            } else {
-                path.to_string()
+    if uri.starts_with("file:///") {
+        if let Ok(uri) = Url::parse(uri) {
+            return uri.to_file_path().unwrap().to_string_lossy().to_string();
             }
         }
-    } else {
+
         uri.to_string()
     }
-}
+
 struct GnomeTerminalProxy;
 
 #[interface(name = "org.freedesktop.Application")]
